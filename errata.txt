@@ -1,0 +1,4 @@
+PCB
+	- USB connector footprint is missing two holes
+	- C2 silkscreen missing orientation marker
+	- I2C address is 0x00, not good

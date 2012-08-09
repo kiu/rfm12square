@@ -1,0 +1,13 @@
+#ifndef RFM12SQUARE_H
+#define RFM12SQUARE_H
+
+#define F_CPU 		8000000UL
+#define DEVPWM 		0x00
+
+#define ADDRESS		0x23
+
+#define TIMEOUT_SECONDS	180
+#define TIMEOUT_COLOR 	0x0000FF
+#define TIMEOUT_BLINK 	0x01
+
+#endif
