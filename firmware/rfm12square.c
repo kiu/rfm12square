@@ -152,17 +152,46 @@ ISR(TIMER1_COMPA_vect) { // 999ms
 
 int main (void) {
 
+#ifdef ORIENTATION_USB_LEFT
     led1.i2c_pwm  = 0b00001010;
     led1.i2c_mode = 0b00010110;
-
     led2.i2c_pwm  = 0b00000110;
     led2.i2c_mode = 0b00010101;
-
     led3.i2c_pwm  = 0b00000010;
     led3.i2c_mode = 0b00010100;
-
     led4.i2c_pwm  = 0b00001110;
     led4.i2c_mode = 0b00010111;
+#endif
+#ifdef ORIENTATION_USB_TOP
+    led1.i2c_pwm  = 0b00001110;
+    led1.i2c_mode = 0b00010111;
+    led2.i2c_pwm  = 0b00001010;
+    led2.i2c_mode = 0b00010110;
+    led3.i2c_pwm  = 0b00000110;
+    led3.i2c_mode = 0b00010101;
+    led4.i2c_pwm  = 0b00000010;
+    led4.i2c_mode = 0b00010100;
+#endif
+#ifdef ORIENTATION_USB_RIGHT
+    led1.i2c_pwm  = 0b00000010;
+    led1.i2c_mode = 0b00010100;
+    led2.i2c_pwm  = 0b00001110;
+    led2.i2c_mode = 0b00010111;
+    led3.i2c_pwm  = 0b00001010;
+    led3.i2c_mode = 0b00010110;
+    led4.i2c_pwm  = 0b00000110;
+    led4.i2c_mode = 0b00010101;
+#endif
+#ifdef ORIENTATION_USB_BOTTOM
+    led1.i2c_pwm  = 0b00000110;
+    led1.i2c_mode = 0b00010101;
+    led2.i2c_pwm  = 0b00000010;
+    led2.i2c_mode = 0b00010100;
+    led3.i2c_pwm  = 0b00001110;
+    led3.i2c_mode = 0b00010111;
+    led4.i2c_pwm  = 0b00001010;
+    led4.i2c_mode = 0b00010110;
+#endif
 
     sei();
 
