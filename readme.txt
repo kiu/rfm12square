@@ -1,4 +1,4 @@
-rfm12square - A RFM12 LED display
+rfm12square - A radio controlled 2×2 RGB status display
 http://schoar.de/tinkering/rfm12square
 
 1. Flash the ATMega8 through ISP
