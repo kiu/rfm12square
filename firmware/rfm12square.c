@@ -10,6 +10,8 @@
 #include "lib/i2c/i2cmaster.h"
 #include "lib/rfm12/rfm12.h"
 
+uint8_t rf_timeout = 0;
+
 struct LED {
     uint8_t i2c_pwm;
     uint8_t i2c_mode;
@@ -20,7 +22,8 @@ struct LED {
     uint8_t blink;
     uint8_t blink_last;
 
-    uint32_t timeout;
+    uint8_t timeout;
+    uint32_t timeout_tick;
 };
 
 struct LED led1;
@@ -65,6 +68,8 @@ void update_led(struct LED* p_led, uint8_t blink, uint8_t r, uint8_t g, uint8_t 
     color |= (uint32_t)b << 0;
 
     p_led->timeout = 0;
+    p_led->timeout_tick = 0;
+
     p_led->color = color;
     p_led->blink = blink;
 
@@ -72,7 +77,6 @@ void update_led(struct LED* p_led, uint8_t blink, uint8_t r, uint8_t g, uint8_t 
 }
 
 void data_received(unsigned char data[], uint8_t size) {
-
     if (size != 6) {
 	return;
     }
@@ -133,21 +137,52 @@ void data_receive(void) {
     data_received(tmp, state);
 }
 
-void timeout_check(struct LED* p_led) {
-    p_led->timeout++;
-    if (p_led->timeout >= TIMEOUT_SECONDS) {
-	p_led->timeout = 0;
-	p_led->color = TIMEOUT_COLOR;
-	p_led->blink = TIMEOUT_BLINK;
-	send_led(p_led);
+uint8_t timeout_check(struct LED* p_led) {
+    if (p_led->timeout == 1) {
+	return 1;
     }
+
+    p_led->timeout_tick++;
+    if (p_led->timeout_tick <= TIMEOUT_SECONDS) {
+	return 0;
+    }
+
+    p_led->timeout = 1;
+    p_led->timeout_tick = 0;
+
+    p_led->color = TIMEOUT_COLOR;
+    p_led->blink = TIMEOUT_BLINK;
+    send_led(p_led);
+
+    return 1;
+}
+
+void radio_init(void) {
+    rfm12_init();
+
+    rfm12_setfreq(RFM12_FREQ(434.32));
+    rfm12_setbandwidth(RxBW200, LNA_6, RSSI_79);
+    rfm12_setbaud(19200);
+    rfm12_setpower(PWRdB_0, TxBW105);
 }
 
 ISR(TIMER1_COMPA_vect) { // 999ms
-    timeout_check(&led1);
-    timeout_check(&led2);
-    timeout_check(&led3);
-    timeout_check(&led4);
+    int s = 0;
+
+    s += timeout_check(&led1);
+    s += timeout_check(&led2);
+    s += timeout_check(&led3);
+    s += timeout_check(&led4);
+
+    if (s == 4) {
+	rf_timeout++;
+	if (rf_timeout >= RF_TIMEOUT) {
+	    rf_timeout = 0;
+	    radio_init();
+	}
+    } else {
+	rf_timeout = 0;
+    }
 }
 
 int main (void) {
@@ -195,12 +230,7 @@ int main (void) {
 
     sei();
 
-    rfm12_init();
-
-    rfm12_setfreq(RFM12_FREQ(434.32));
-    rfm12_setbandwidth(RxBW200, LNA_6, RSSI_79);
-    rfm12_setbaud(19200);
-    rfm12_setpower(PWRdB_0, TxBW105);
+    radio_init();
 
     i2c_init();
 
@@ -272,10 +302,10 @@ int main (void) {
     _delay_ms(200);
 
 
-    led1.timeout = 0xFFFFFFFF - 1;
-    led2.timeout = 0xFFFFFFFF - 1;
-    led3.timeout = 0xFFFFFFFF - 1;
-    led4.timeout = 0xFFFFFFFF - 1;
+    led1.timeout_tick = 0xFFFFFFFF - 1;
+    led2.timeout_tick = 0xFFFFFFFF - 1;
+    led3.timeout_tick = 0xFFFFFFFF - 1;
+    led4.timeout_tick = 0xFFFFFFFF - 1;
 
     // Init Timer1B
     TCCR1B = (1<<WGM12)|(1<<CS12)|(1<<CS10); // CTC /1024 128us
