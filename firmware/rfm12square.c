@@ -10,9 +10,9 @@
 #include "lib/i2c/i2cmaster.h"
 #include "lib/rfm12/rfm12.h"
 
-uint8_t rf_timeout = 0;
+volatile uint8_t rf_timeout = 0;
 
-struct LED {
+volatile struct LED {
     uint8_t i2c_pwm;
     uint8_t i2c_mode;
 
@@ -22,8 +22,8 @@ struct LED {
     uint8_t blink;
     uint8_t blink_last;
 
-    uint8_t timeout;
-    uint32_t timeout_tick;
+   uint8_t timeout;
+   uint32_t timeout_tick;
 };
 
 struct LED led1;
